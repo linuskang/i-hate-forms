@@ -8,9 +8,10 @@
             "type": "registry:component",
             "title": "Headless Form",
             "description": "A compound React Hook Form component that provides form logic while letting you bring your own UI.",
-            "dependencies": [
-                "react-hook-form"
-            ],
+            "author": "Linus Kang",
+            "categories": ["forms", "react-hook-form", "headless"],
+            "docs": "Import the installed component with: import { Form } from \"@/components/form\". Documentation: https://github.com/linuskang/i-hate-forms/tree/master/docs",
+            "dependencies": ["react-hook-form"],
             "files": [
                 {
                     "path": "registry/form/index.tsx",
