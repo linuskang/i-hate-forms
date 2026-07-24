@@ -137,6 +137,25 @@ export default function Page() {
                     {JSON.stringify(submittedValues, null, 2)}
                 </pre>
             )}
+
+            <p className="text-muted-foreground">
+                thats literally it. youve now covered all the basics of using this component library.
+            </p>
+
+            <p className="text-muted-foreground">
+                to get started, click the button below. thanks for checking this project out.
+            </p>
+
+            <div className="flex justify-center">
+                <Button className="rounded-full text-xs" variant="default">
+                    Get started <ArrowRight />
+                </Button>
+            </div>
+
+            <p className="text-muted-foreground font-semibold text-center text-xs mt-15">
+                © 2026 Linus Kang. Licensed under MIT.
+            </p>
+
         </main>
     )
 }
