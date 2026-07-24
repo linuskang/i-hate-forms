@@ -1,0 +1,63 @@
+---
+title: Installation
+description: Add the form component to your shadcn/ui project.
+---
+
+# Installation
+
+The form component is published as a shadcn registry item. You can copy it directly from `@/registry/form` or add it to your own registry.
+
+## Prerequisites
+
+- A Next.js project with shadcn/ui installed.
+- [react-hook-form](https://react-hook-form.com/) is the only runtime dependency.
+
+## Install the dependency
+
+```bash
+npm install react-hook-form
+```
+
+## Copy the component
+
+Copy `registry/form/index.tsx` into your project. The default target is `@/components/form/index.tsx`:
+
+```bash
+# or just copy the file manually
+mkdir -p components/form
+cp registry/form/index.tsx components/form/index.tsx
+```
+
+If you want to keep the original registry path, import it from `@/registry/form`:
+
+```tsx
+import { Form } from "@/registry/form"
+```
+
+## Add a resolver (optional)
+
+For validation, install a resolver such as Zod:
+
+```bash
+npm install zod @hookform/resolvers
+```
+
+You can then pass the resolver through `formOptions`:
+
+```tsx
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+
+const schema = z.object({
+    email: z.string().email(),
+})
+
+<Form
+    formOptions={{ resolver: zodResolver(schema) }}
+    onSubmit={(values) => console.log(values)}
+>
+    ...
+</Form>
+```
+
+That's it. You are ready to build a form.
