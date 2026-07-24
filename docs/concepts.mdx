@@ -1,0 +1,213 @@
+---
+title: Concepts
+description: Learn how to build your own form from scratch with i-hate-forms.
+---
+
+# Concepts
+
+This guide walks you through building a simple form from scratch. By the end, you will understand how `Form`, `Form.Field`, and `Form.Submit` work together.
+
+## The big idea
+
+A form has three jobs:
+
+1. **Track values** — remember what the user typed.
+2. **Validate** — make sure the values are correct.
+3. **Submit** — send the values somewhere.
+
+`react-hook-form` already does all three. `i-hate-forms` exposes them through a small component API so you do not have to write the same hook wiring every time.
+
+## Step 1: Define your form shape
+
+Start with a TypeScript type that describes the fields you want.
+
+```tsx
+type LoginForm = {
+    email: string
+    password: string
+}
+```
+
+You pass this type to `<Form<LoginForm>>` so TypeScript knows which field names are valid.
+
+## Step 2: Render the form root
+
+`<Form>` creates a form context and renders a `<form>` element. Give it an `onSubmit` handler.
+
+```tsx
+import { Form } from "@/registry/form"
+
+export function LoginPage() {
+    return (
+        <Form<LoginForm>
+            onSubmit={(values) => {
+                console.log("Submitting", values)
+            }}
+        >
+            ...
+        </Form>
+    )
+}
+```
+
+## Step 3: Add fields
+
+Each field needs a `name` that matches your form type. Wrap the input with `<Form.Field>`.
+
+```tsx
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+
+<Form<LoginForm> onSubmit={...}>
+    <div>
+        <Label htmlFor="email">Email</Label>
+        <Form.Field<LoginForm> name="email">
+            <Input id="email" type="email" />
+        </Form.Field>
+    </div>
+
+    <div>
+        <Label htmlFor="password">Password</Label>
+        <Form.Field<LoginForm> name="password">
+            <Input id="password" type="password" />
+        </Form.Field>
+    </div>
+</Form>
+```
+
+What happens here:
+
+- `Form.Field` calls `useController` from `react-hook-form`.
+- It clones the child `<Input>` and injects `name`, `value`, `onChange`, `onBlur`, `ref`, and `aria-invalid`.
+- Your input stays uncontrolled under the hood, which is the fastest way to handle form state.
+
+## Step 4: Add a submit button
+
+`<Form.Submit>` handles the submit button. It sets `type="submit"` and disables the button while the form is submitting.
+
+```tsx
+import { Button } from "@/components/ui/button"
+
+<Form.Submit>
+    <Button>Log in</Button>
+</Form.Submit>
+```
+
+If you pass a plain string or a custom element that is not a valid React element, it wraps it in a `<button>`.
+
+## Step 5: Add default values and validation
+
+Use `formOptions` to pass anything you would normally pass to `useForm`.
+
+```tsx
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+
+const schema = z.object({
+    email: z.string().email(),
+    password: z.string().min(8),
+})
+
+type LoginForm = z.infer<typeof schema>
+
+<Form<LoginForm>
+    formOptions={{
+        resolver: zodResolver(schema),
+        defaultValues: { email: "", password: "" },
+        mode: "onBlur",
+    }}
+    onSubmit={(values) => console.log(values)}
+>
+    ...
+</Form>
+```
+
+With a resolver, invalid submissions trigger the `onInvalid` handler instead of `onSubmit`.
+
+## Step 6: Display errors
+
+The render function gives you access to `fieldState`:
+
+```tsx
+<Form.Field<LoginForm> name="email">
+    {({ field, fieldState }) => (
+        <div>
+            <Input
+                id="email"
+                type="email"
+                {...field}
+                value={field.value ?? ""}
+            />
+            {fieldState.invalid && (
+                <p className="text-sm text-red-500">
+                    {fieldState.error?.message}
+                </p>
+            )}
+        </div>
+    )}
+</Form.Field>
+```
+
+## Complete example
+
+```tsx
+"use client"
+
+import { Form } from "@/registry/form"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+
+const schema = z.object({
+    email: z.string().email("Please enter a valid email"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+})
+
+type LoginForm = z.infer<typeof schema>
+
+export function LoginForm() {
+    return (
+        <Form<LoginForm>
+            className="space-y-4 rounded-lg border p-6"
+            formOptions={{
+                resolver: zodResolver(schema),
+                defaultValues: { email: "", password: "" },
+            }}
+            onSubmit={(values) => console.log(values)}
+        >
+            <Form.Title>Log in</Form.Title>
+            <Form.Description>Welcome back.</Form.Description>
+
+            <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Form.Field<LoginForm> name="email">
+                    <Input id="email" type="email" />
+                </Form.Field>
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Form.Field<LoginForm> name="password">
+                    <Input id="password" type="password" />
+                </Form.Field>
+            </div>
+
+            <Form.Submit>
+                <Button className="w-full">Log in</Button>
+            </Form.Submit>
+        </Form>
+    )
+}
+```
+
+## Summary
+
+- `<Form>` creates the form context and handles submit.
+- `<Form.Field>` wires a named input to the form state.
+- `<Form.Submit>` renders the submit button and manages the submitting state.
+- Use `formOptions` for `defaultValues`, resolvers, and all other `useForm` options.
+- Use the render function for `fieldState` when you need to show errors or custom controls.
+
+From here, you can explore the [Form API reference](/docs/form) and more [usage examples](/docs/usage).
