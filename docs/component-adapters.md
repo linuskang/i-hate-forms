@@ -48,13 +48,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 </Form.Field>
 ```
 
-If the component can return an indeterminate state, normalize it before passing
-it to a boolean field:
-
-```tsx
-onCheckedChange: (checked) => field.onChange(checked === true)
-```
-
 ## shadcn Switch
 
 ```tsx
@@ -125,6 +118,8 @@ If a particular Select implementation does not accept the injected `ref` or
 
 Native radio inputs do not require an override. Direct children with
 `type="radio"` are compared against the current field value automatically.
+Because native radio input values are strings, keep the corresponding form
+value and default values as strings unless you handle conversion explicitly.
 
 ## shadcn Slider
 

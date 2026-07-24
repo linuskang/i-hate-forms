@@ -91,8 +91,9 @@ input contract, it injects:
 ```
 
 These are controller-backed, controlled values. Supplying matching
-`defaultValues` through `formOptions` avoids controlled/uncontrolled warnings
-and gives reset operations a known destination.
+`defaultValues` through `formOptions` gives reset operations a known destination
+and keeps initial form state explicit. Direct native binding normalizes missing
+text values to `""` and missing checkbox values to `false`.
 
 ## Field Names and Type Safety
 

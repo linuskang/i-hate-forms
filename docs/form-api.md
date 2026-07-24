@@ -8,14 +8,19 @@ After installing the GitHub registry item:
 import { Form } from "@/components/form"
 ```
 
-The public API is one compound component:
+The public API is one compound component. Structurally, a form contains:
 
 ```tsx
-<Form>
-    <Form.Title />
-    <Form.Description />
-    <Form.Field />
-    <Form.Submit />
+<Form onSubmit={handleSubmit}>
+    <Form.Title>Title</Form.Title>
+    <Form.Description>Description</Form.Description>
+    <Form.Label name="field-name">Label</Form.Label>
+    <Form.Field name="field-name">
+        <input />
+    </Form.Field>
+    <Form.Error name="field-name" />
+    <Form.Reset>Reset</Form.Reset>
+    <Form.Submit>Submit</Form.Submit>
 </Form>
 ```
 
@@ -53,6 +58,9 @@ type is replaced by React Hook Form's typed submit handler.
 - Calls `handleSubmit(onSubmit, onInvalid)` for native submit events.
 - Adds `noValidate`, so browser constraint-validation UI is disabled.
 - Connects the generated title and description IDs through ARIA attributes.
+
+The generated ARIA attributes and `noValidate` behavior are owned by the form
+component and override conflicting native form props.
 
 Use `formOptions` for any supported `useForm` option:
 
@@ -95,6 +103,22 @@ Renders an unstyled `p` linked to the form with `aria-describedby`.
 It accepts all native paragraph props. As with `Form.Title`, avoid overriding
 the generated `id` without updating the form's accessibility relationship.
 
+## `Form.Label`
+
+Renders an unstyled native `label` connected to the direct child of the
+corresponding `Form.Field`.
+
+```tsx
+<Form.Label<Values> name="email">Email</Form.Label>
+<Form.Field<Values> name="email">
+    <Input />
+</Form.Field>
+```
+
+The `name` is type checked as a `FieldPath<TFieldValues>`. All native label
+props are supported. A provided `htmlFor` overrides the generated field ID. If
+the field child provides its own `id`, provide the same value as `htmlFor`.
+
 ## `Form.Field`
 
 Connects one named value to React Hook Form through `useController`.
@@ -124,6 +148,9 @@ the `FormProvider` created by the root.
 
 The child must be a single valid React element. In standard mode, existing
 `onChange` and `onBlur` handlers are called before React Hook Form's handlers.
+The component also supplies a generated `id` and connects the field to its
+matching `Form.Error` through `aria-describedby`. Existing `id` and
+`aria-describedby` props are preserved.
 
 ### Native Checkbox and Radio
 
@@ -139,6 +166,8 @@ field value.
 
 This automatic detection applies to native-style inputs. The shadcn `Checkbox`
 component requires `override` because it does not expose `type="checkbox"`.
+Native radio values are strings, so use string values in your form type and
+default values unless you transform the browser event yourself.
 
 ### Override
 
@@ -177,6 +206,71 @@ those defaults.
 ```
 
 No cloning or automatic prop injection happens in render-function mode.
+
+## `Form.Error`
+
+Renders an unstyled paragraph when the named field has a validation error. It
+returns `null` while the field has no error.
+
+```tsx
+<Form.Field<Values>
+    name="email"
+    rules={{ required: "Email is required" }}
+>
+    <Input type="email" />
+</Form.Field>
+<Form.Error<Values> name="email" className="text-sm text-destructive" />
+```
+
+By default, the paragraph contains the error's `message`. Pass children to
+replace it, or use a render function for custom output:
+
+```tsx
+<Form.Error<Values> name="email">
+    {(error) => <span>{error.message}</span>}
+</Form.Error>
+```
+
+The generated error ID is included in the invalid direct-child field's
+`aria-describedby`. A provided `id` overrides that generated ID, so avoid
+replacing it unless the control's ARIA attributes are also updated. In
+render-function field mode, apply the accessibility relationships manually or
+render the error inside the field.
+
+## `Form.Reset`
+
+Resets the form to its configured default values. Element children receive
+`type="button"`, and their existing click handler runs before the reset. Calling
+`event.preventDefault()` in that handler cancels the reset.
+
+```tsx
+<Form.Reset>
+    <Button variant="outline">Reset</Button>
+</Form.Reset>
+```
+
+Text and other non-element content is wrapped in an unstyled native button:
+
+```tsx
+<Form.Reset>Reset</Form.Reset>
+```
+
+A render function receives the form methods and relevant form state. It owns
+the rendered control and calls `form.reset()` explicitly:
+
+```tsx
+<Form.Reset>
+    {({ form, isDirty, isSubmitting }) => (
+        <Button
+            type="button"
+            disabled={!isDirty || isSubmitting}
+            onClick={() => form.reset()}
+        >
+            Discard changes
+        </Button>
+    )}
+</Form.Reset>
+```
 
 ## `Form.Submit`
 
@@ -230,10 +324,13 @@ methods plus `isSubmitting`.
 
 ```tsx
 import type {
+    FormErrorProps,
     FormFieldOverride,
     FormFieldProps,
     FormFieldRenderProps,
+    FormLabelProps,
     FormProps,
+    FormResetProps,
     FormSubmitProps,
 } from "@/components/form"
 ```

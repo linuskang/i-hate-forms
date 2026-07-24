@@ -53,26 +53,41 @@ export function ContactForm() {
             <Form.Description>We normally reply within a day.</Form.Description>
 
             <div>
-                <Label htmlFor="name">Name</Label>
-                <Form.Field<ContactValues> name="name">
-                    <Input id="name" autoComplete="name" />
+                <Form.Label<ContactValues> name="name">Name</Form.Label>
+                <Form.Field<ContactValues>
+                    name="name"
+                    rules={{ required: "Name is required" }}
+                >
+                    <Input autoComplete="name" />
                 </Form.Field>
+                <Form.Error<ContactValues> name="name" />
             </div>
 
             <div>
-                <Label htmlFor="email">Email</Label>
-                <Form.Field<ContactValues> name="email">
-                    <Input id="email" type="email" autoComplete="email" />
+                <Form.Label<ContactValues> name="email">Email</Form.Label>
+                <Form.Field<ContactValues>
+                    name="email"
+                    rules={{ required: "Email is required" }}
+                >
+                    <Input type="email" autoComplete="email" />
                 </Form.Field>
+                <Form.Error<ContactValues> name="email" />
             </div>
 
             <div>
-                <Label htmlFor="message">Message</Label>
-                <Form.Field<ContactValues> name="message">
-                    <Textarea id="message" />
+                <Form.Label<ContactValues> name="message">Message</Form.Label>
+                <Form.Field<ContactValues>
+                    name="message"
+                    rules={{ required: "Message is required" }}
+                >
+                    <Textarea />
                 </Form.Field>
+                <Form.Error<ContactValues> name="message" />
             </div>
 
+            <Form.Reset>
+                <Button type="button" variant="outline">Reset</Button>
+            </Form.Reset>
             <Form.Submit>
                 {({ isSubmitting }) => (
                     <Button type="submit" disabled={isSubmitting}>

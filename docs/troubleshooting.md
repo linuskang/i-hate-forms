@@ -52,8 +52,10 @@ See [component adapters](./component-adapters.md).
 
 ## Controlled/Uncontrolled Warnings
 
-The direct binding passes `value` or `checked` to the child. Define defaults for
-every controlled field:
+Direct native binding normalizes missing text values to `""` and missing
+checkbox values to `false`. Warnings usually come from an `override` or render
+function that initially passes `undefined` and later passes a controlled value.
+Define defaults that match every custom component's value contract:
 
 ```tsx
 formOptions={{
@@ -65,8 +67,9 @@ formOptions={{
 }}
 ```
 
-Use the empty value expected by the component. Avoid changing a value from
-`undefined` to a controlled string, boolean, or array after the first render.
+Use the empty value expected by the component. Avoid changing a custom control
+from `undefined` to a controlled string, boolean, or array after the first
+render. Defaults are also important for reliable `reset()` behavior.
 
 ## A Field Name Is Not Type-Checked
 

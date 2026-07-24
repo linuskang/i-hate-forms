@@ -4,7 +4,6 @@ import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Form } from "@/registry/form"
 import { Badge } from "@/components/ui/badge"
@@ -112,26 +111,44 @@ export default function Page() {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="name">Your Name</Label>
-                    <Form.Field<DemoForm> name="name">
-                        <Input id="name" placeholder="A cool person" />
+                    <Form.Label<DemoForm> name="name">Your Name</Form.Label>
+                    <Form.Field<DemoForm>
+                        name="name"
+                        rules={{ required: "Your name is required" }}
+                    >
+                        <Input placeholder="A cool person" />
                     </Form.Field>
+                    <Form.Error<DemoForm>
+                        className="text-sm text-destructive"
+                        name="name"
+                    />
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
-                    <Form.Field<DemoForm> name="message">
+                    <Form.Label<DemoForm> name="message">Message</Form.Label>
+                    <Form.Field<DemoForm>
+                        name="message"
+                        rules={{ required: "A message is required" }}
+                    >
                         <Textarea
-                            id="message"
                             className="min-h-20 resize-none"
                             placeholder="Woah cool form..."
                         />
                     </Form.Field>
+                    <Form.Error<DemoForm>
+                        className="text-sm text-destructive"
+                        name="message"
+                    />
                 </div>
 
-                <Form.Submit>
-                    <Button className="w-full">Send message</Button>
-                </Form.Submit>
+                <div className="flex gap-2">
+                    <Form.Reset>
+                        <Button variant="outline">Reset</Button>
+                    </Form.Reset>
+                    <Form.Submit>
+                        <Button className="flex-1">Send message</Button>
+                    </Form.Submit>
+                </div>
             </Form>
 
             {submittedValues && (
