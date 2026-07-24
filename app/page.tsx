@@ -63,7 +63,9 @@ export default function Page() {
 
                 <div className="flex justify-center gap-2">
                     <Button className="rounded-full text-xs" variant="default">
-                        Try the demo <ArrowRight />
+                        <Link href="/demo">
+                            Try the demo <ArrowRight />
+                        </Link>
                     </Button>
 
                     <Button className="rounded-full text-xs" variant="secondary">
