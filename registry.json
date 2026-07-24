@@ -1,0 +1,23 @@
+{
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "i-hate-forms",
+    "homepage": "https://github.com/linuskang/i-hate-forms",
+    "items": [
+        {
+            "name": "form",
+            "type": "registry:component",
+            "title": "Headless Form",
+            "description": "A compound React Hook Form component that provides form logic while letting you bring your own UI.",
+            "dependencies": [
+                "react-hook-form"
+            ],
+            "files": [
+                {
+                    "path": "registry/form/index.tsx",
+                    "type": "registry:component",
+                    "target": "@components/form/index.tsx"
+                }
+            ]
+        }
+    ]
+}
