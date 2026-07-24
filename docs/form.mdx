@@ -1,0 +1,179 @@
+---
+title: Form
+description: API reference for the headless Form component.
+---
+
+# Form
+
+`<Form>` is a compound component built on `react-hook-form`. It creates a form context, registers fields, and handles submission.
+
+## Import
+
+```tsx
+import { Form } from "@/registry/form"
+```
+
+## `<Form>`
+
+The root component creates a `react-hook-form` instance and renders a native `<form>` element.
+
+### Props
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `formOptions` | `UseFormProps<TFieldValues>` | Options passed to `useForm`, such as `defaultValues`, `resolver`, and `mode`. |
+| `onSubmit` | `SubmitHandler<TFieldValues>` | Called when validation passes and the form is submitted. |
+| `onInvalid` | `SubmitErrorHandler<TFieldValues>` | Called when validation fails. |
+
+All other props are forwarded to the underlying `<form>` element.
+
+### Example
+
+```tsx
+import { Form } from "@/registry/form"
+
+export function Example() {
+    return (
+        <Form<{ name: string }>
+            formOptions={{ defaultValues: { name: "" } }}
+            onSubmit={(values) => console.log(values)}
+            onInvalid={(errors) => console.error(errors)}
+            className="space-y-4"
+        >
+            ...
+        </Form>
+    )
+}
+```
+
+## `<Form.Title>`
+
+Renders an `<h2>` element that is automatically linked to the form via `aria-labelledby`.
+
+```tsx
+<Form.Title>Sign in</Form.Title>
+```
+
+## `<Form.Description>`
+
+Renders a `<p>` element that is automatically linked to the form via `aria-describedby`.
+
+```tsx
+<Form.Description>Enter your details below.</Form.Description>
+```
+
+## `<Form.Field>`
+
+Registers a child control with `react-hook-form`. It accepts either a single React element or a render function.
+
+### Props
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `name` | `FieldPath<TFieldValues>` | The field name. Must match a key of your form values type. |
+| `rules` | `RegisterOptions` | Validation rules passed to `useController`. |
+| `defaultValue` | `FieldPathValue<TFieldValues, TName>` | Default value for the field. |
+| `children` | `ReactElement \| (controller) => ReactNode` | The control or a render function receiving the controller. |
+| `override` | `(controller) => object` | Advanced: override the props injected into the child element. |
+
+### Single-element usage
+
+For most inputs, pass the control as a direct child. The field clones it and injects `name`, `value`, `onChange`, `onBlur`, `disabled`, `ref`, and `aria-invalid`.
+
+```tsx
+import { Input } from "@/components/ui/input"
+
+<Form.Field name="email">
+    <Input type="email" placeholder="you@example.com" />
+</Form.Field>
+```
+
+### Checkbox and radio
+
+`Form.Field` detects `type="checkbox"` and `type="radio"` and wires `checked` correctly.
+
+```tsx
+<input type="checkbox" />
+```
+
+### Render function usage
+
+For full control, pass a function that receives the controller result from `useController`:
+
+```tsx
+<Form.Field name="bio">
+    {({ field, fieldState }) => (
+        <>
+            <textarea {...field} />
+            {fieldState.error && (
+                <span>{fieldState.error.message}</span>
+            )}
+        </>
+    )}
+</Form.Field>
+```
+
+### Custom controls with `override`
+
+When a component does not follow the standard `value` / `onChange` pattern, use `override` to map the controller state yourself.
+
+```tsx
+import { Switch } from "@/components/ui/switch"
+
+<Form.Field
+    name="enabled"
+    override={({ field }) => ({
+        checked: field.value,
+        onCheckedChange: field.onChange,
+    })}
+>
+    <Switch />
+</Form.Field>
+```
+
+## `<Form.Submit>`
+
+Renders the submit button. It automatically disables the button while the form is submitting.
+
+### Props
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactElement \| ReactNode \| (props) => ReactNode` | — | The button content, or a render function. |
+| `disableWhileSubmitting` | `boolean` | `true` | Whether to disable the button during submission. |
+
+### Example
+
+```tsx
+import { Button } from "@/components/ui/button"
+
+<Form.Submit>
+    <Button>Submit</Button>
+</Form.Submit>
+```
+
+### Render function
+
+```tsx
+<Form.Submit>
+    {({ isSubmitting }) => (
+        <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : "Save"}
+        </button>
+    )}
+</Form.Submit>
+```
+
+## Types
+
+```tsx
+export type {
+    FormFieldOverride,
+    FormFieldProps,
+    FormFieldRenderProps,
+    FormProps,
+    FormSubmitProps,
+} from "@/registry/form"
+```
+
+These are the same types used internally. Re-export them if you want to build wrappers around the component.
