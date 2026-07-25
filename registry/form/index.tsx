@@ -134,11 +134,13 @@ type FormFieldProps<
               props: FormFieldRenderProps<TFieldValues, TName>
           ) => React.ReactNode)
     override?: FormFieldOverride<TFieldValues, TName>
+    required?: boolean | string
 }
 
 type NativeControlProps = {
     "aria-describedby"?: string
     "aria-invalid"?: boolean
+    "aria-required"?: boolean
     checked?: boolean
     disabled?: boolean
     id?: string
@@ -146,6 +148,7 @@ type NativeControlProps = {
     onBlur?: (event: React.FocusEvent) => void
     onChange?: (event: React.ChangeEvent) => void
     ref?: React.Ref<unknown>
+    required?: boolean
     type?: string
     value?: unknown
 }
@@ -165,9 +168,32 @@ function mergeRefs<T>(...refs: Array<React.Ref<T> | undefined>) {
 function FormField<
     TFieldValues extends FieldValues = FieldValues,
     TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
->({ children, override, ...props }: FormFieldProps<TFieldValues, TName>) {
+>({
+    children,
+    override,
+    required,
+    ...props
+}: FormFieldProps<TFieldValues, TName>) {
     const { id } = useHeadlessForm()
-    const controller = useController<TFieldValues, TName>(props)
+    const rules =
+        required === undefined || props.rules?.required !== undefined
+            ? props.rules
+            : {
+                  ...props.rules,
+                  required:
+                      typeof required === "string"
+                          ? required
+                          : required && "This field is required",
+              }
+    const requiredRule = rules?.required
+    const isRequired =
+        typeof requiredRule === "object"
+            ? requiredRule.value
+            : Boolean(requiredRule)
+    const controller = useController<TFieldValues, TName>({
+        ...props,
+        rules,
+    })
 
     if (typeof children === "function") {
         return children(controller)
@@ -194,6 +220,9 @@ function FormField<
             id: childProps.id ?? getFieldId(id, props.name),
             name: field.name,
             ref: mergeRefs(childProps.ref, field.ref),
+            ...(isRequired
+                ? { "aria-required": true, required: true }
+                : undefined),
             ...override(controller),
         } as NativeControlProps)
     }
@@ -213,6 +242,11 @@ function FormField<
             field.onChange(event)
         },
         ref: mergeRefs(childProps.ref, field.ref),
+    }
+
+    if (isRequired) {
+        controlProps["aria-required"] = true
+        controlProps.required = true
     }
 
     if (checkbox) {
@@ -273,6 +307,7 @@ function FormError<
 
 type FormSubmitRenderProps = {
     form: UseFormReturn<FieldValues>
+    isLoading: boolean
     isSubmitting: boolean
 }
 
@@ -282,25 +317,34 @@ type FormSubmitProps = {
         | React.ReactNode
         | ((props: FormSubmitRenderProps) => React.ReactNode)
     disableWhileSubmitting?: boolean
+    loading?: boolean
+}
+
+type SubmitControlProps = {
+    "aria-busy"?: boolean
+    disabled?: boolean
+    type?: string
 }
 
 function FormSubmit({
     children,
     disableWhileSubmitting = true,
+    loading = false,
 }: FormSubmitProps) {
     const form = useFormContext()
     const isSubmitting = form.formState.isSubmitting
+    const isLoading = loading || isSubmitting
+    const disabled = loading || (disableWhileSubmitting && isSubmitting)
 
     if (typeof children === "function") {
-        return children({ form, isSubmitting })
+        return children({ form, isLoading, isSubmitting })
     }
 
-    if (
-        !React.isValidElement<{ disabled?: boolean; type?: string }>(children)
-    ) {
+    if (!React.isValidElement<SubmitControlProps>(children)) {
         return (
             <button
-                disabled={disableWhileSubmitting && isSubmitting}
+                aria-busy={isLoading || undefined}
+                disabled={disabled}
                 type="submit"
             >
                 {children}
@@ -309,8 +353,8 @@ function FormSubmit({
     }
 
     return React.cloneElement(children, {
-        disabled:
-            children.props.disabled || (disableWhileSubmitting && isSubmitting),
+        "aria-busy": children.props["aria-busy"] || isLoading || undefined,
+        disabled: children.props.disabled || disabled,
         type: "submit",
     })
 }

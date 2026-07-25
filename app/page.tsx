@@ -114,7 +114,7 @@ export default function Page() {
                     <Form.Label<DemoForm> name="name">Your Name</Form.Label>
                     <Form.Field<DemoForm>
                         name="name"
-                        rules={{ required: "Your name is required" }}
+                        required="Your name is required"
                     >
                         <Input placeholder="A cool person" />
                     </Form.Field>
@@ -128,7 +128,7 @@ export default function Page() {
                     <Form.Label<DemoForm> name="message">Message</Form.Label>
                     <Form.Field<DemoForm>
                         name="message"
-                        rules={{ required: "A message is required" }}
+                        required="A message is required"
                     >
                         <Textarea
                             className="min-h-20 resize-none"

@@ -56,7 +56,7 @@ export function ContactForm() {
                 <Form.Label<ContactValues> name="name">Name</Form.Label>
                 <Form.Field<ContactValues>
                     name="name"
-                    rules={{ required: "Name is required" }}
+                    required="Name is required"
                 >
                     <Input autoComplete="name" />
                 </Form.Field>
@@ -67,7 +67,7 @@ export function ContactForm() {
                 <Form.Label<ContactValues> name="email">Email</Form.Label>
                 <Form.Field<ContactValues>
                     name="email"
-                    rules={{ required: "Email is required" }}
+                    required="Email is required"
                 >
                     <Input type="email" autoComplete="email" />
                 </Form.Field>
@@ -78,7 +78,7 @@ export function ContactForm() {
                 <Form.Label<ContactValues> name="message">Message</Form.Label>
                 <Form.Field<ContactValues>
                     name="message"
-                    rules={{ required: "Message is required" }}
+                    required="Message is required"
                 >
                     <Textarea />
                 </Form.Field>

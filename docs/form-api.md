@@ -130,6 +130,7 @@ Connects one named value to React Hook Form through `useController`.
 | `name`             | `FieldPath<TFieldValues>`                   | Yes      | Path of the value managed by this field.                    |
 | `children`         | `ReactElement \| (controller) => ReactNode` | Yes      | One control element or a render function.                   |
 | `override`         | `(controller) => Record<string, unknown>`   | No       | Replaces default value/change binding for a custom control. |
+| `required`         | `boolean \| string`                         | No       | Adds required validation, optionally with an error message. |
 | `rules`            | `RegisterOptions`                           | No       | React Hook Form validation and transformation rules.        |
 | `defaultValue`     | `FieldPathValue`                            | No       | Field-level default when no root default is supplied.       |
 | `disabled`         | `boolean`                                   | No       | Disables the controller and injected child prop.            |
@@ -141,10 +142,15 @@ the `FormProvider` created by the root.
 ### Standard Child
 
 ```tsx
-<Form.Field<Values> name="email" rules={{ required: "Email is required" }}>
+<Form.Field<Values> name="email" required="Email is required">
     <Input type="email" />
 </Form.Field>
 ```
+
+Using `required` also supplies native `required` and `aria-required` attributes
+to direct children. `required` without a string uses `"This field is required"`
+as its message. Existing `rules={{ required: ... }}` usage remains supported;
+when both APIs are present, `rules.required` takes precedence.
 
 The child must be a single valid React element. In standard mode, existing
 `onChange` and `onBlur` handlers are called before React Hook Form's handlers.
@@ -215,7 +221,7 @@ returns `null` while the field has no error.
 ```tsx
 <Form.Field<Values>
     name="email"
-    rules={{ required: "Email is required" }}
+    required="Email is required"
 >
     <Input type="email" />
 </Form.Field>
@@ -282,6 +288,7 @@ Connects a submit control to React Hook Form's pending state.
 | ------------------------ | ---------------------------------------------- | ------- | ---------------------------------------------------------- |
 | `children`               | `ReactElement \| ReactNode \| render function` | None    | Submit element, native button content, or custom renderer. |
 | `disableWhileSubmitting` | `boolean`                                      | `true`  | Disables the control while `isSubmitting` is true.         |
+| `loading`                | `boolean`                                      | `false` | Controls an additional external loading state.             |
 
 ### Element Child
 
@@ -292,7 +299,16 @@ Connects a submit control to React Hook Form's pending state.
 ```
 
 The element receives `type="submit"`. Its existing `disabled` value is
-preserved, and pending state may also disable it.
+preserved, and pending state may also disable it. While either `loading` or
+React Hook Form's `isSubmitting` is true, it receives `aria-busy`. External
+`loading` always disables the element; `disableWhileSubmitting` only controls
+whether React Hook Form's submitting state disables it.
+
+```tsx
+<Form.Submit loading={creating}>
+    <Button>Create Project</Button>
+</Form.Submit>
+```
 
 ### Text Child
 
@@ -306,10 +322,11 @@ Non-element content is wrapped in an unstyled native button:
 
 ```tsx
 <Form.Submit>
-    {({ form, isSubmitting }) => (
+    {({ form, isLoading, isSubmitting }) => (
         <Button
             type="submit"
-            disabled={isSubmitting || !form.formState.isDirty}
+            aria-busy={isLoading}
+            disabled={isLoading || !form.formState.isDirty}
         >
             {isSubmitting ? "Saving..." : "Save"}
         </Button>
@@ -318,7 +335,7 @@ Non-element content is wrapped in an unstyled native button:
 ```
 
 The render function owns all button props and receives the React Hook Form
-methods plus `isSubmitting`.
+methods plus `isSubmitting` and the combined `isLoading` state.
 
 ## Exported Types
 
